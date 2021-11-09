@@ -33,10 +33,10 @@ export class ColorConfig {
 				--fifth-note: #468;
 				--white-piano-key: #bbb;
 				--black-piano-key: #444;
-				--pitch1-secondary-channel: #0099A1;
-				--pitch1-primary-channel:   #25F3FF;
-				--pitch1-secondary-note:    #00BDC7;
-				--pitch1-primary-note:      #92F9FF;
+				--pitch1-secondary-channel: #69b6ff;
+				--pitch1-primary-channel:   #69b6ff;
+				--pitch1-secondary-note:    #69b6ff;
+				--pitch1-primary-note:      #69b6ff;
 				--pitch2-secondary-channel: #A1A100;
 				--pitch2-primary-channel:   #FFFF25;
 				--pitch2-secondary-note:    #C7C700;
