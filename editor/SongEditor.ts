@@ -30,7 +30,7 @@ import {ExportPrompt} from "./ExportPrompt";
 import {ImportPrompt} from "./ImportPrompt";
 import {SongRecoveryPrompt} from "./SongRecoveryPrompt";
 import {Change} from "./Change";
-import {ChangeTempo, ChangeChorus, ChangeEchoDelay, ChangeEchoSustain, ChangeReverb, ChangeVolume, ChangePan, ChangePatternSelection, ChangePulseWidth, ChangeFeedbackAmplitude, ChangeOperatorAmplitude, ChangeOperatorFrequency, ChangeDrumsetEnvelope, ChangeChannelBar, ChangePasteInstrument, ChangePreset, pickRandomPresetValue, ChangeRandomGeneratedInstrument, ChangeScale, ChangeDetectKey, ChangeKey, ChangeRhythm, ChangeFeedbackType, ChangeAlgorithm, ChangeCustomizeInstrument, ChangeChipWave, ChangeNoiseWave, ChangeTransition, ChangeToggleEffects, ChangeVibrato, ChangeUnison, ChangeChord, ChangeSong, ChangePitchShift, ChangeDetune, ChangeDistortion, ChangeStringSustain, ChangeBitcrusherFreq, ChangeBitcrusherQuantization, ChangeAddEnvelope, ChangeAddChannelInstrument, ChangeRemoveChannelInstrument} from "./changes";
+import {ChangeTempo, ChangeChorus, ChangeEchoDelay, ChangeEchoSustain, ChangeReverb, ChangeVolume, ChangePan, ChangePatternSelection, ChangePulseWidth, ChangeFeedbackAmplitude, ChangeOperatorAmplitude, ChangeOperatorFrequency, ChangeDrumsetEnvelope, ChangePasteInstrument, ChangePreset, pickRandomPresetValue, ChangeRandomGeneratedInstrument, ChangeScale, ChangeDetectKey, ChangeKey, ChangeRhythm, ChangeFeedbackType, ChangeAlgorithm, ChangeCustomizeInstrument, ChangeChipWave, ChangeNoiseWave, ChangeTransition, ChangeToggleEffects, ChangeVibrato, ChangeUnison, ChangeChord, ChangeSong, ChangePitchShift, ChangeDetune, ChangeDistortion, ChangeStringSustain, ChangeBitcrusherFreq, ChangeBitcrusherQuantization, ChangeAddEnvelope, ChangeAddChannelInstrument, ChangeRemoveChannelInstrument} from "./changes";
 
 const {a, button, div, input, select, span, optgroup, option} = HTML;
 
@@ -45,10 +45,10 @@ function buildPresetOptions(isNoise: boolean): HTMLSelectElement {
 	const menu: HTMLSelectElement = select();
 	
 	menu.appendChild(optgroup({label: "Edit"},
-		option({value: "copyInstrument"}, "Copy Instrument"),
-		option({value: "pasteInstrument"}, "Paste Instrument"),
-		option({value: "randomPreset"}, "Random Preset"),
-		option({value: "randomGenerated"}, "Random Generated"),
+		option({value: "copyInstrument"}, "Copy Instrument (⇧C)"),
+		option({value: "pasteInstrument"}, "Paste Instrument (⇧V)"),
+		option({value: "randomPreset"}, "Random Preset (R)"),
+		option({value: "randomGenerated"}, "Random Generated (⇧R)"),
 	));
 	
 	// Show the "spectrum" custom type in both pitched and noise channels.
@@ -134,8 +134,8 @@ export class SongEditor {
 	private readonly _fileMenu: HTMLSelectElement = select({style: "width: 100%;"},
 		option({selected: true, disabled: true, hidden: false}, "File"), // todo: "hidden" should be true but looks wrong on mac chrome, adds checkmark next to first visible option even though it's not selected. :(
 		option({value: "new"}, "+ New Blank Song"),
-		option({value: "import"}, "↑ Import Song..."),
-		option({value: "export"}, "↓ Export Song..."),
+		option({value: "import"}, "↑ Import Song... (" + EditorConfig.ctrlSymbol + "O)"),
+		option({value: "export"}, "↓ Export Song... (" + EditorConfig.ctrlSymbol + "S)"),
 		option({value: "copyUrl"}, "⎘ Copy Song URL"),
 		option({value: "shareUrl"}, "⤳ Share Song URL"),
 		option({value: "shortenUrl"}, "… Shorten Song URL"),
@@ -149,18 +149,20 @@ export class SongEditor {
 		option({value: "redo"}, "Redo (Y)"),
 		option({value: "copy"}, "Copy Pattern (C)"),
 		option({value: "pasteNotes"}, "Paste Pattern Notes (V)"),
-		option({value: "pasteNumbers"}, "Paste Pattern Numbers (⇧V)"),
-		option({value: "insertBars"}, "Insert Bar After Selection (⏎)"),
-		option({value: "deleteBars"}, "Delete Selected Bar (⌫)"),
+		option({value: "pasteNumbers"}, "Paste Pattern Numbers (" + EditorConfig.ctrlSymbol + "⇧V)"),
+		option({value: "insertBars"}, "Insert Bar (⏎)"),
+		option({value: "deleteBars"}, "Delete Selected Bars (⌫)"),
+		option({value: "insertChannel"}, "Insert Channel (" + EditorConfig.ctrlSymbol + "⏎)"),
+		option({value: "deleteChannel"}, "Delete Selected Channels (" + EditorConfig.ctrlSymbol + "⌫)"),
 		option({value: "selectAll"}, "Select All (A)"),
 		option({value: "selectChannel"}, "Select Channel (⇧A)"),
 		option({value: "duplicatePatterns"}, "Duplicate Reused Patterns (D)"),
-		option({value: "transposeUp"}, "Move Notes Up (+)"),
-		option({value: "transposeDown"}, "Move Notes Down (-)"),
+		option({value: "transposeUp"}, "Move Notes Up (+ or ⇧+)"),
+		option({value: "transposeDown"}, "Move Notes Down (- or ⇧-)"),
 		option({value: "moveNotesSideways"}, "Move All Notes Sideways..."),
 		option({value: "beatsPerBar"}, "Change Beats Per Bar..."),
 		option({value: "barCount"}, "Change Song Length..."),
-		option({value: "channelSettings"}, "Channel Settings..."),
+		option({value: "channelSettings"}, "Channel Settings... (Q)"),
 	);
 	private readonly _optionsMenu: HTMLSelectElement = select({style: "width: 100%;"},
 		option({selected: true, disabled: true, hidden: false}, "Preferences"), // todo: "hidden" should be true but looks wrong on mac chrome, adds checkmark next to first visible option even though it's not selected. :(
@@ -169,9 +171,12 @@ export class SongEditor {
 		option({value: "enableNotePreview"}, "Preview Added Notes"),
 		option({value: "showLetters"}, "Show Piano Keys"),
 		option({value: "showFifth"}, 'Highlight "Fifth" Notes'),
+		option({value: "notesOutsideScale"}, "Allow Notes Outside Scale"),
+		option({value: "setDefaultScale"}, "Use Current Scale as Default"),
 		option({value: "showChannels"}, "Show All Channels"),
 		option({value: "showScrollBar"}, "Octave Scroll Bar"),
 		option({value: "alwaysShowSettings"}, "Customize All Instruments"),
+		option({value: "instrumentCopyPaste"}, "Instrument Copy/Paste Buttons"),
 		option({value: "enableChannelMuting"}, "Enable Channel Muting"),
 		option({value: "displayBrowserUrl"}, "Display Song Data in URL"),
 		option({value: "layout"}, "Choose Layout..."),
@@ -199,6 +204,9 @@ export class SongEditor {
 	private readonly _instrumentRemoveButton: HTMLButtonElement = button({type: "button", class: "remove-instrument"});
 	private readonly _instrumentsButtonBar: HTMLDivElement = div({class: "instrument-bar"}, this._instrumentRemoveButton, this._instrumentAddButton);
 	private readonly _instrumentsButtonRow: HTMLDivElement = div({class: "selectRow", style: "display: none;"}, span({class: "tip", onclick: ()=>this._openPrompt("instrumentIndex")}, "Instrument:"), this._instrumentsButtonBar);
+	private readonly _instrumentCopyButton: HTMLButtonElement = button({type: "button", class: "copy-instrument"}, "Copy");
+	private readonly _instrumentPasteButton: HTMLButtonElement = button({type: "button", class: "paste-instrument"}, "Paste");
+	private readonly _instrumentCopyPasteRow: HTMLDivElement = div({class: "instrumentCopyPasteRow", style: "display: none;"}, this._instrumentCopyButton, this._instrumentPasteButton);
 	private readonly _instrumentVolumeSlider: Slider = new Slider(input({style: "margin: 0;", type: "range", min: -(Config.volumeRange - 1), max: "0", value: "0", step: "1"}), this._doc, (oldValue: number, newValue: number) => new ChangeVolume(this._doc, oldValue, -newValue));
 	private readonly _instrumentVolumeSliderRow: HTMLDivElement = div({class: "selectRow"}, span({class: "tip", onclick: ()=>this._openPrompt("instrumentVolume")}, "Volume:"), this._instrumentVolumeSlider.input);
 	private readonly _panSlider: Slider = new Slider(input({style: "margin: 0;", type: "range", min: "0", max: Config.panMax, value: Config.panCenter, step: "1"}), this._doc, (oldValue: number, newValue: number) => new ChangePan(this._doc, oldValue, newValue));
@@ -299,6 +307,7 @@ export class SongEditor {
 			"Instrument Settings"
 		),
 		this._instrumentsButtonRow,
+		this._instrumentCopyPasteRow,
 		this._instrumentVolumeSliderRow,
 		div({class: "selectRow"},
 			span({class: "tip", onclick: ()=>this._openPrompt("instrumentType")}, "Type:"),
@@ -497,6 +506,8 @@ export class SongEditor {
 		this._drumPresetSelect.addEventListener("change", this._whenSetDrumPreset);
 		this._algorithmSelect.addEventListener("change", this._whenSetAlgorithm);
 		this._instrumentsButtonBar.addEventListener("click", this._whenSelectInstrument);
+		this._instrumentCopyButton.addEventListener("click", this._copyInstrument);
+		this._instrumentPasteButton.addEventListener("click", this._pasteInstrument);
 		this._customizeInstrumentButton.addEventListener("click", this._whenCustomizePressed);
 		this._feedbackTypeSelect.addEventListener("change", this._whenSetFeedbackType);
 		this._chipWaveSelect.addEventListener("change", this._whenSetChipWave);
@@ -522,6 +533,8 @@ export class SongEditor {
 		this._harmonicsEditor.container.addEventListener("mousedown", this._refocusStage);
 		this._tempoStepper.addEventListener("keydown", this._tempoStepperCaptureNumberKeys, false);
 		this._addEnvelopeButton.addEventListener("click", this._addNewEnvelope);
+		this._patternArea.addEventListener("contextmenu", this._disableCtrlContextMenu);
+		this._trackArea.addEventListener("contextmenu", this._disableCtrlContextMenu);
 		this.mainLayer.addEventListener("keydown", this._whenKeyPressed);
 		
 		this._promptContainer.addEventListener("click", (event) => {
@@ -661,9 +674,12 @@ export class SongEditor {
 			(this._doc.enableNotePreview ? "✓ " : "　") + "Preview Added Notes",
 			(this._doc.showLetters ? "✓ " : "　") + "Show Piano Keys",
 			(this._doc.showFifth ? "✓ " : "　") + 'Highlight "Fifth" Notes',
+			(this._doc.notesOutsideScale ? "✓ " : "　") + "Allow Notes Outside Scale",
+			(this._doc.defaultScale == this._doc.song.scale ? "✓ " : "　") + "Use Current Scale as Default",
 			(this._doc.showChannels ? "✓ " : "　") + "Show All Channels",
 			(this._doc.showScrollBar ? "✓ " : "　") + "Octave Scroll Bar",
 			(this._doc.alwaysShowSettings ? "✓ " : "　") + "Customize All Instruments",
+			(this._doc.instrumentCopyPaste ? "✓ " : "　") + "Instrument Copy/Paste Buttons",
 			(this._doc.enableChannelMuting ? "✓ " : "　") + "Enable Channel Muting",
 			(this._doc.displayBrowserUrl ? "✓ " : "　") + "Display Song Data in URL",
 			"　Choose Layout...",
@@ -708,6 +724,12 @@ export class SongEditor {
 			this._pitchedPresetSelect.style.display = "";
 			this._drumPresetSelect.style.display = "none";
 			setSelectedValue(this._pitchedPresetSelect, instrument.preset);
+		}
+		
+		if (this._doc.instrumentCopyPaste) {
+			this._instrumentCopyPasteRow.style.display = "";
+		} else {
+			this._instrumentCopyPasteRow.style.display = "none";
 		}
 		
 		if (!this._doc.alwaysShowSettings && instrument.preset != instrument.type) {
@@ -1026,6 +1048,17 @@ export class SongEditor {
 		}
 	}
 	
+	private _disableCtrlContextMenu = (event: MouseEvent): boolean => {
+		// On a Mac, clicking while holding control opens the right-click context menu.
+		// But in the pattern and track editors I'd rather prevent that and instead allow
+		// custom behaviors such as setting the volume of a note.
+		if (event.ctrlKey) {
+			event.preventDefault();
+			return false;
+		}
+		return true;
+	}
+	
 	private _tempoStepperCaptureNumberKeys = (event: KeyboardEvent): void => {
 		// When the number input is in focus, allow some keyboard events to
 		// edit the input without accidentally editing the song otherwise.
@@ -1062,11 +1095,20 @@ export class SongEditor {
 		
 		switch (event.keyCode) {
 			case 27: // ESC key
-				new ChangePatternSelection(this._doc, 0, 0);
-				this._doc.selection.resetBoxSelection();
+				if (!event.ctrlKey && !event.metaKey) {
+					new ChangePatternSelection(this._doc, 0, 0);
+					this._doc.selection.resetBoxSelection();
+				}
 				break;
 			case 32: // space
-				this._togglePlay();
+				if (event.shiftKey) {
+					// Jump to mouse
+					if (this._trackEditor.movePlayheadToMouse() || this._patternEditor.movePlayheadToMouse()) {
+						if (!this._doc.synth.playing) this._play();
+					}
+				} else {
+					this._togglePlay();
+				}
 				event.preventDefault();
 				this._refocusStage();
 				break;
@@ -1083,15 +1125,27 @@ export class SongEditor {
 				event.preventDefault();
 				break;
 			case 67: // c
-				this._doc.selection.copy();
+				if (event.shiftKey) {
+					this._copyInstrument();
+				} else {
+					this._doc.selection.copy();
+				}
 				event.preventDefault();
 				break;
 			case 13: // enter/return
-				this._doc.selection.insertBars();
+				if (event.ctrlKey || event.metaKey) {
+					this._doc.selection.insertChannel();
+				} else {
+					this._doc.selection.insertBars();
+				}
 				event.preventDefault();
 				break;
 			case 8: // backspace/delete
-				this._doc.selection.deleteBars();
+				if (event.ctrlKey || event.metaKey) {
+					this._doc.selection.deleteChannel();
+				} else {
+					this._doc.selection.deleteBars();
+				}
 				event.preventDefault();
 				break;
 			case 65: // a
@@ -1103,35 +1157,73 @@ export class SongEditor {
 				event.preventDefault();
 				break;
 			case 68: // d
-				this._doc.selection.duplicatePatterns();
-				event.preventDefault();
-				break;
-			case 77: // m
-				if (this._doc.enableChannelMuting) {
-					this._doc.selection.muteChannels(event.shiftKey);
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.duplicatePatterns();
 					event.preventDefault();
 				}
 				break;
-			case 83: // s
-				if (this._doc.enableChannelMuting) {
-					if (event.shiftKey) {
-						this._doc.selection.muteChannels(false);
-					} else {
-						this._doc.selection.soloChannels();
+			case 70: // f
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.synth.snapToStart();
+					if (this._doc.autoFollow) {
+						this._doc.selection.setChannelBar(this._doc.channel, Math.floor(this._doc.synth.playhead));
 					}
 					event.preventDefault();
 				}
 				break;
+			case 72: // h
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.synth.goToBar(this._doc.bar);
+					this._doc.synth.snapToBar();
+					if (this._doc.autoFollow) {
+						this._doc.selection.setChannelBar(this._doc.channel, Math.floor(this._doc.synth.playhead));
+					}
+					event.preventDefault();
+				}
+				break;
+			case 77: // m
+				if (!event.ctrlKey && !event.metaKey) {
+					if (this._doc.enableChannelMuting) {
+						this._doc.selection.muteChannels(event.shiftKey);
+						event.preventDefault();
+					}
+				}
+				break;
+			case 81: // q
+				if (!event.ctrlKey && !event.metaKey) {
+					this._openPrompt("channelSettings");
+					event.preventDefault();
+				}
+				break;
+			case 83: // s
+				if (event.ctrlKey || event.metaKey) {
+					this._openPrompt("export");
+					event.preventDefault();
+				} else {
+					if (this._doc.enableChannelMuting) {
+						this._doc.selection.soloChannels(event.shiftKey);
+						event.preventDefault();
+					}
+				}
+				break;
+			case 79: // o
+				if (event.ctrlKey || event.metaKey) {
+					this._openPrompt("import");
+					event.preventDefault();
+				}
+				break;
 			case 86: // v
-				if (event.shiftKey) {
+				if ((event.ctrlKey || event.metaKey) && event.shiftKey) {
 					this._doc.selection.pasteNumbers();
+				} else if (event.shiftKey) {
+					this._pasteInstrument();
 				} else {
 					this._doc.selection.pasteNotes();
 				}
 				event.preventDefault();
 				break;
 			case 73: // i
-				if (event.shiftKey) {
+				if (!event.ctrlKey && !event.metaKey && event.shiftKey) {
 					// Copy the current instrument as a preset to the clipboard.
 					const instrument: Instrument = this._doc.song.channels[this._doc.channel].instruments[this._doc.getCurrentInstrument()];
 					const instrumentObject: any = instrument.toJsonObject();
@@ -1150,35 +1242,56 @@ export class SongEditor {
 						}
 					}
 					this._copyTextToClipboard(JSON.stringify(instrumentObject));
+					event.preventDefault();
 				}
-				event.preventDefault();
+				break;
+			case 82: // r
+				if (!event.ctrlKey && !event.metaKey) {
+					if (event.shiftKey) {
+						this._randomGenerated();
+					} else {
+						this._randomPreset();
+					}
+					event.preventDefault();
+				}
 				break;
 			case 219: // left brace
-				this._doc.synth.goToPrevBar();
-				if (this._doc.autoFollow) {
-					new ChangeChannelBar(this._doc, this._doc.channel, Math.floor(this._doc.synth.playhead));
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.synth.goToPrevBar();
+					if (this._doc.autoFollow) {
+						this._doc.selection.setChannelBar(this._doc.channel, Math.floor(this._doc.synth.playhead));
+					}
+					event.preventDefault();
 				}
-				event.preventDefault();
 				break;
 			case 221: // right brace
-				this._doc.synth.goToNextBar();
-				if (this._doc.autoFollow) {
-					new ChangeChannelBar(this._doc, this._doc.channel, Math.floor(this._doc.synth.playhead));
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.synth.goToNextBar();
+					if (this._doc.autoFollow) {
+						this._doc.selection.setChannelBar(this._doc.channel, Math.floor(this._doc.synth.playhead));
+					}
+					event.preventDefault();
 				}
-				event.preventDefault();
 				break;
 			case 189: // -
 			case 173: // Firefox -
-				this._doc.selection.transpose(false, event.shiftKey);
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.transpose(false, event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 187: // +
 			case 61: // Firefox +
-				this._doc.selection.transpose(true, event.shiftKey);
-				event.preventDefault();
+			case 171: // Some users have this as +? Hmm.
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.transpose(true, event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 38: // up
-				if (event.shiftKey) {
+				if (event.ctrlKey || event.metaKey) {
+					this._doc.selection.swapChannels(-1);
+				} else if (event.shiftKey) {
 					this._doc.selection.boxSelectionY1 = Math.max(0, this._doc.selection.boxSelectionY1 - 1);
 					this._doc.selection.scrollToSelection();
 					this._doc.selection.selectionUpdated();
@@ -1189,7 +1302,9 @@ export class SongEditor {
 				event.preventDefault();
 				break;
 			case 40: // down
-				if (event.shiftKey) {
+				if (event.ctrlKey || event.metaKey) {
+					this._doc.selection.swapChannels(1);
+				} else if (event.shiftKey) {
 					this._doc.selection.boxSelectionY1 = Math.min(this._doc.song.getChannelCount() - 1, this._doc.selection.boxSelectionY1 + 1);
 					this._doc.selection.scrollToSelection();
 					this._doc.selection.selectionUpdated();
@@ -1222,47 +1337,68 @@ export class SongEditor {
 				event.preventDefault();
 				break;
 			case 48: // 0
-				this._doc.selection.nextDigit("0");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("0", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 49: // 1
-				this._doc.selection.nextDigit("1");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("1", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 50: // 2
-				this._doc.selection.nextDigit("2");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("2", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 51: // 3
-				this._doc.selection.nextDigit("3");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("3", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 52: // 4
-				this._doc.selection.nextDigit("4");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("4", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 53: // 5
-				this._doc.selection.nextDigit("5");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("5", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 54: // 6
-				this._doc.selection.nextDigit("6");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("6", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 55: // 7
-				this._doc.selection.nextDigit("7");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("7", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 56: // 8
-				this._doc.selection.nextDigit("8");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("8", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			case 57: // 9
-				this._doc.selection.nextDigit("9");
-				event.preventDefault();
+				if (!event.ctrlKey && !event.metaKey) {
+					this._doc.selection.nextDigit("9", event.shiftKey);
+					event.preventDefault();
+				}
 				break;
 			default:
 				this._doc.selection.digits = "";
+				this._doc.selection.instrumentDigits = "";
 				break;
 		}
 	}
@@ -1320,21 +1456,23 @@ export class SongEditor {
 		this._doc.setVolume(Number(this._volumeSlider.value));
 	}
 	
-	private _copyInstrument(): void {
+	private _copyInstrument = (): void => {
 		const channel: Channel = this._doc.song.channels[this._doc.channel];
 		const instrument: Instrument = channel.instruments[this._doc.getCurrentInstrument()];
 		const instrumentCopy: any = instrument.toJsonObject();
 		instrumentCopy["isDrum"] = this._doc.song.getChannelIsNoise(this._doc.channel);
 		window.localStorage.setItem("instrumentCopy", JSON.stringify(instrumentCopy));
+		this._refocusStage();
 	}
 	
-	private _pasteInstrument(): void {
+	private _pasteInstrument = (): void => {
 		const channel: Channel = this._doc.song.channels[this._doc.channel];
 		const instrument: Instrument = channel.instruments[this._doc.getCurrentInstrument()];
 		const instrumentCopy: any = JSON.parse(String(window.localStorage.getItem("instrumentCopy")));
 		if (instrumentCopy != null && instrumentCopy["isDrum"] == this._doc.song.getChannelIsNoise(this._doc.channel)) {
 			this._doc.record(new ChangePasteInstrument(this._doc, instrument, instrumentCopy));
 		}
+		this._refocusStage();
 	}
 	
 	private _randomPreset(): void {
@@ -1551,6 +1689,12 @@ export class SongEditor {
 			case "deleteBars":
 				this._doc.selection.deleteBars();
 				break;
+			case "insertChannel":
+				this._doc.selection.insertChannel();
+				break;
+			case "deleteChannel":
+				this._doc.selection.deleteChannel();
+				break;
 			case "pasteNotes":
 				this._doc.selection.pasteNotes();
 				break;
@@ -1605,6 +1749,12 @@ export class SongEditor {
 			case "showFifth":
 				this._doc.showFifth = !this._doc.showFifth;
 				break;
+			case "notesOutsideScale":
+				this._doc.notesOutsideScale = !this._doc.notesOutsideScale;
+				break;
+			case "setDefaultScale":
+				this._doc.defaultScale = this._doc.song.scale;
+				break;
 			case "showChannels":
 				this._doc.showChannels = !this._doc.showChannels;
 				break;
@@ -1613,6 +1763,9 @@ export class SongEditor {
 				break;
 			case "alwaysShowSettings":
 				this._doc.alwaysShowSettings = !this._doc.alwaysShowSettings;
+				break;
+			case "instrumentCopyPaste":
+				this._doc.instrumentCopyPaste = !this._doc.instrumentCopyPaste;
 				break;
 			case "enableChannelMuting":
 				this._doc.enableChannelMuting = !this._doc.enableChannelMuting;

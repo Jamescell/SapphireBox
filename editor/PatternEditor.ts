@@ -71,6 +71,7 @@ export class PatternEditor {
 	private _copiedPins: NotePin[];
 	private _mouseXStart: number = 0;
 	private _mouseYStart: number = 0;
+	private _ctrlHeld: boolean = false;
 	private _shiftHeld: boolean = false;
 	private _touchTime: number = 0;
 	private _draggingStartOfSelection: boolean = false;
@@ -329,7 +330,7 @@ export class PatternEditor {
 	private _snapToPitch(guess: number, min: number, max: number): number {
 		if (guess < min) guess = min;
 		if (guess > max) guess = max;
-		const scale: ReadonlyArray<boolean> = Config.scales[this._doc.song.scale].flags;
+		const scale: ReadonlyArray<boolean> = this._doc.notesOutsideScale ? Config.scales.dictionary["expert"].flags : Config.scales[this._doc.song.scale].flags;
 		if (scale[Math.floor(guess) % Config.pitchesPerOctave] || this._doc.song.getChannelIsNoise(this._doc.channel)) {
 			return Math.floor(guess);
 		} else {
@@ -377,6 +378,14 @@ export class PatternEditor {
 			}
 		}
 		this._copiedPinChannels[this._doc.channel] = this._copiedPins;
+	}
+	
+	public movePlayheadToMouse(): boolean {
+		if (this._mouseOver) {
+			this._doc.synth.playhead = this._doc.bar + this._barOffset + (this._mouseX / this._editorWidth);
+			return true;
+		}
+		return false;
 	}
 	
 	public resetCopiedPins = (): void => {
@@ -441,6 +450,7 @@ export class PatternEditor {
 		if (isNaN(this._mouseX)) this._mouseX = 0;
 		if (isNaN(this._mouseY)) this._mouseY = 0;
 		this._usingTouch = false;
+		this._ctrlHeld = event.ctrlKey || event.metaKey;
 		this._shiftHeld = event.shiftKey;
 		this._whenCursorPressed();
 	}
@@ -453,6 +463,7 @@ export class PatternEditor {
 		if (isNaN(this._mouseX)) this._mouseX = 0;
 		if (isNaN(this._mouseY)) this._mouseY = 0;
 		this._usingTouch = true;
+		this._ctrlHeld = event.ctrlKey || event.metaKey;
 		this._shiftHeld = event.shiftKey;
 		this._touchTime = performance.now();
 		this._whenCursorPressed();
@@ -801,7 +812,7 @@ export class PatternEditor {
 					this._dragSize = bendSize;
 					this._dragVisible = true;
 					
-					sequence.append(new ChangeSizeBend(this._doc, this._cursor.curNote, bendPart, bendSize, bendInterval));
+					sequence.append(new ChangeSizeBend(this._doc, this._cursor.curNote, bendPart, bendSize, bendInterval, this._ctrlHeld));
 					this._copyPins(this._cursor.curNote);
 				} else {
 					sequence.append(new ChangePatternSelection(this._doc, 0, 0));
